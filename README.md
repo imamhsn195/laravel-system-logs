@@ -38,7 +38,7 @@ Add the repository to your `composer.json`:
         }
     ],
     "require": {
-        "imamhsn195/laravel-system-logs": "dev-master"
+        "imamhsn195/laravel-system-logs": "dev-main"
     }
 }
 ```
@@ -46,7 +46,7 @@ Add the repository to your `composer.json`:
 Then run:
 
 ```bash
-composer require imamhsn195/laravel-system-logs:dev-master
+composer require imamhsn195/laravel-system-logs:dev-main
 ```
 
 ### Via Packagist (when published)
