@@ -191,8 +191,12 @@ class SystemLogService
             return collect();
         }
         
-        $content = File::get($fullPath);
-        $lines = explode("\n", $content);
+        $maxLines = config('system-logs.filters.max_lines_per_file', 5000);
+        $readFromEnd = config('system-logs.filters.read_from_end', true);
+        
+        // Read lines efficiently
+        $lines = $this->readLogFileLines($fullPath, $maxLines, $readFromEnd);
+        
         $entries = collect();
         $currentEntry = null;
         $pattern = config('system-logs.parsing.entry_pattern');
@@ -218,6 +222,126 @@ class SystemLogService
         }
         
         return $entries;
+    }
+    
+    /**
+     * Read log file lines efficiently, optionally from the end.
+     */
+    protected function readLogFileLines(string $filePath, int $maxLines, bool $readFromEnd): array
+    {
+        if (!File::exists($filePath)) {
+            return [];
+        }
+        
+        $fileSize = File::size($filePath);
+        
+        // For small files, read normally
+        if ($fileSize < 5 * 1024 * 1024) { // Less than 5MB
+            $content = File::get($filePath);
+            $allLines = explode("\n", $content);
+            
+            if ($readFromEnd && count($allLines) > $maxLines) {
+                // Return last N lines
+                return array_slice($allLines, -$maxLines);
+            }
+            
+            return $allLines;
+        }
+        
+        // For large files, read from end using file pointer
+        if ($readFromEnd) {
+            return $this->readLinesFromEnd($filePath, $maxLines);
+        }
+        
+        // Read from beginning with limit
+        return $this->readLinesFromStart($filePath, $maxLines);
+    }
+    
+    /**
+     * Read last N lines from file efficiently.
+     */
+    protected function readLinesFromEnd(string $filePath, int $maxLines): array
+    {
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return [];
+        }
+        
+        // Move to end of file
+        fseek($handle, 0, SEEK_END);
+        $fileSize = ftell($handle);
+        
+        // If file is small, read normally
+        if ($fileSize < 1024 * 1024) { // Less than 1MB
+            fseek($handle, 0);
+            $content = stream_get_contents($handle);
+            fclose($handle);
+            $lines = explode("\n", $content);
+            return array_slice($lines, -$maxLines);
+        }
+        
+        // Read backwards in chunks
+        $lines = [];
+        $chunkSize = 8192; // 8KB chunks
+        $position = $fileSize;
+        $buffer = '';
+        
+        while ($position > 0 && count($lines) < $maxLines) {
+            $readSize = min($chunkSize, $position);
+            $position -= $readSize;
+            
+            fseek($handle, $position);
+            $chunk = fread($handle, $readSize);
+            $buffer = $chunk . $buffer;
+            
+            // Split by newlines
+            $chunkLines = explode("\n", $buffer);
+            
+            // Keep last line as it might be incomplete
+            $buffer = array_pop($chunkLines);
+            
+            // Add lines in reverse order
+            $lines = array_merge(array_reverse($chunkLines), $lines);
+            
+            // Limit to maxLines
+            if (count($lines) > $maxLines) {
+                $lines = array_slice($lines, -$maxLines);
+                break;
+            }
+        }
+        
+        // Add remaining buffer if any
+        if (!empty($buffer)) {
+            array_unshift($lines, $buffer);
+        }
+        
+        fclose($handle);
+        
+        // Return last N lines, reversed to maintain chronological order
+        return array_reverse(array_slice($lines, -$maxLines));
+    }
+    
+    /**
+     * Read first N lines from file.
+     */
+    protected function readLinesFromStart(string $filePath, int $maxLines): array
+    {
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return [];
+        }
+        
+        $lines = [];
+        $lineCount = 0;
+        
+        while ($lineCount < $maxLines && ($line = fgets($handle)) !== false) {
+            $lines[] = rtrim($line, "\r\n");
+            $lineCount++;
+        }
+        
+        fclose($handle);
+        
+        return $lines;
     }
     
     /**

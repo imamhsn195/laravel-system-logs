@@ -33,6 +33,8 @@ return [
         'default_max_files' => 3,
         'min_max_files' => 1,
         'max_max_files' => 20,
+        'max_lines_per_file' => 5000, // Limit lines read per file for performance
+        'read_from_end' => true, // Read from end of file (most recent entries first)
     ],
     
     // Parsing configuration
