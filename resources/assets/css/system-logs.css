@@ -20,52 +20,53 @@
 }
 
 /* Level Badges */
-.level-badge {
+.badge.level-badge {
     padding: 4px 8px;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     border-radius: 4px;
+    display: inline-block;
 }
 
-.level-debug {
-    background-color: #6c757d;
-    color: #fff;
+.badge.level-badge.level-debug {
+    background-color: #6c757d !important;
+    color: #fff !important;
 }
 
-.level-info {
-    background-color: #0dcaf0;
-    color: #000;
+.badge.level-badge.level-info {
+    background-color: #0dcaf0 !important;
+    color: #000 !important;
 }
 
-.level-notice {
-    background-color: #17a2b8;
-    color: #fff;
+.badge.level-badge.level-notice {
+    background-color: #17a2b8 !important;
+    color: #fff !important;
 }
 
-.level-warning {
-    background-color: #ffc107;
-    color: #000;
+.badge.level-badge.level-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
 }
 
-.level-error {
-    background-color: #dc3545;
-    color: #fff;
+.badge.level-badge.level-error {
+    background-color: #dc3545 !important;
+    color: #fff !important;
 }
 
-.level-critical {
-    background-color: #721c24;
-    color: #fff;
+.badge.level-badge.level-critical {
+    background-color: #721c24 !important;
+    color: #fff !important;
 }
 
-.level-alert {
-    background-color: #856404;
-    color: #fff;
+.badge.level-badge.level-alert {
+    background-color: #856404 !important;
+    color: #fff !important;
 }
 
-.level-emergency {
-    background-color: #000;
-    color: #fff;
+.badge.level-badge.level-emergency {
+    background-color: #000 !important;
+    color: #fff !important;
 }
 
 /* Table Styles */
