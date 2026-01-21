@@ -1,0 +1,187 @@
+/* System Logs Package Styles */
+
+.system-logs-wrapper {
+    padding: 20px 0;
+}
+
+.system-logs-wrapper .card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.system-logs-wrapper .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.system-logs-wrapper .card-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Level Badges */
+.level-badge {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    border-radius: 4px;
+}
+
+.level-debug {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.level-info {
+    background-color: #0dcaf0;
+    color: #000;
+}
+
+.level-notice {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.level-warning {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.level-error {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.level-critical {
+    background-color: #721c24;
+    color: #fff;
+}
+
+.level-alert {
+    background-color: #856404;
+    color: #fff;
+}
+
+.level-emergency {
+    background-color: #000;
+    color: #fff;
+}
+
+/* Table Styles */
+.system-logs-wrapper .table {
+    font-size: 0.875rem;
+}
+
+.system-logs-wrapper .table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.system-logs-wrapper .table td {
+    vertical-align: middle;
+}
+
+.log-message {
+    max-width: 400px;
+    word-wrap: break-word;
+}
+
+.log-message pre {
+    font-size: 0.8rem;
+    background-color: #f8f9fa;
+    padding: 8px;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Filter Form */
+#log-filters-form .form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+#log-filters-form .form-select,
+#log-filters-form .form-control {
+    font-size: 0.875rem;
+}
+
+/* Loading State */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #007bff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .system-logs-wrapper .table {
+        font-size: 0.75rem;
+    }
+    
+    .log-message {
+        max-width: 200px;
+    }
+    
+    #log-filters-form .col-md-2 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Button Styles */
+.system-logs-wrapper .btn {
+    font-size: 0.875rem;
+}
+
+.system-logs-wrapper .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Modal Styles */
+#bulkDeleteModal .modal-body pre {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-size: 0.8rem;
+}
+
+#bulkDeleteModal .alert {
+    margin-bottom: 1rem;
+}
+
+/* Entry Details */
+.collapse .card {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.collapse pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}

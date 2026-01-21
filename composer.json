@@ -1,0 +1,56 @@
+{
+    "name": "imamhsn195/laravel-system-logs",
+    "description": "A comprehensive Laravel package for viewing and managing system logs with an intuitive web interface",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "logs",
+        "system-logs",
+        "log-viewer",
+        "log-management"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Imam Hasan",
+            "email": "imamhasan@example.com",
+            "homepage": "https://imamhasan.me",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0",
+        "illuminate/http": "^10.0|^11.0",
+        "illuminate/view": "^10.0|^11.0",
+        "illuminate/routing": "^10.0|^11.0",
+        "illuminate/filesystem": "^10.0|^11.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^8.0|^9.0",
+        "phpunit/phpunit": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ImamHasan\\SystemLogs\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ImamHasan\\SystemLogs\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "ImamHasan\\SystemLogs\\SystemLogServiceProvider"
+            ]
+        }
+    },
+    "support": {
+        "issues": "https://github.com/imamhsn195/laravel-system-logs/issues",
+        "source": "https://github.com/imamhsn195/laravel-system-logs"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
