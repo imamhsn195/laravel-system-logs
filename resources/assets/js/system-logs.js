@@ -19,6 +19,31 @@
                     e.preventDefault();
                     this.applyFilters();
                 });
+                
+                // Auto-apply filters on change
+                const filterInputs = filterForm.querySelectorAll('select, input[type="text"], input[type="date"], input[type="search"]');
+                let debounceTimer;
+                
+                filterInputs.forEach(input => {
+                    // Skip reset button and other non-filter inputs
+                    if (input.id === 'reset-filters' || input.type === 'button' || input.type === 'submit') {
+                        return;
+                    }
+                    
+                    input.addEventListener('change', () => {
+                        this.applyFilters();
+                    });
+                    
+                    // For text inputs, add debounce to avoid too many requests
+                    if (input.type === 'text' || input.type === 'search') {
+                        input.addEventListener('input', () => {
+                            clearTimeout(debounceTimer);
+                            debounceTimer = setTimeout(() => {
+                                this.applyFilters();
+                            }, 500); // Wait 500ms after user stops typing
+                        });
+                    }
+                });
             }
             
             // Reset filters
@@ -97,6 +122,8 @@
         },
         
         applyFilters: function() {
+            this.showLoader();
+            
             const form = document.getElementById('log-filters-form');
             const formData = new FormData(form);
             const params = new URLSearchParams();
@@ -110,10 +137,26 @@
             window.location.href = this.config.baseUrl + '?' + params.toString();
         },
         
+        showLoader: function() {
+            const loader = document.getElementById('system-logs-loader');
+            if (loader) {
+                loader.classList.add('active');
+            }
+        },
+        
+        hideLoader: function() {
+            const loader = document.getElementById('system-logs-loader');
+            if (loader) {
+                loader.classList.remove('active');
+            }
+        },
+        
         deleteEntry: function(file, timestamp) {
             if (!confirm('Are you sure you want to delete this log entry?')) {
                 return;
             }
+            
+            this.showLoader();
             
             const formData = new FormData();
             formData.append('file', file);
@@ -133,11 +176,13 @@
                 if (data.success) {
                     location.reload();
                 } else {
+                    this.hideLoader();
                     alert(data.message || 'Failed to delete log entry');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                this.hideLoader();
                 alert('An error occurred while deleting the log entry');
             });
         },
@@ -155,8 +200,14 @@
                 return;
             }
             
+            this.showLoader();
+            
+            // Send as JSON with proper array format
             const formData = new FormData();
-            formData.append('entries', JSON.stringify(selected));
+            selected.forEach((entry, index) => {
+                formData.append(`entries[${index}][file]`, entry.file);
+                formData.append(`entries[${index}][timestamp]`, entry.timestamp);
+            });
             formData.append('_token', this.config.csrfToken);
             formData.append('_method', 'DELETE');
             
@@ -172,11 +223,13 @@
                 if (data.success) {
                     location.reload();
                 } else {
+                    this.hideLoader();
                     alert(data.message || 'Failed to delete log entries');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                this.hideLoader();
                 alert('An error occurred while deleting log entries');
             });
         },
@@ -244,6 +297,8 @@
             requestData.append('_token', this.config.csrfToken);
             requestData.append('_method', 'DELETE');
             
+            this.showLoader();
+            
             fetch(this.config.bulkDeleteByFiltersUrl, {
                 method: 'POST',
                 body: requestData,
@@ -258,11 +313,13 @@
                     modal.hide();
                     location.reload();
                 } else {
+                    this.hideLoader();
                     alert(data.message || 'Failed to delete log entries');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                this.hideLoader();
                 alert('An error occurred while deleting log entries');
             });
         },
@@ -294,4 +351,13 @@
     
     // Export to global scope
     window.SystemLogs = SystemLogs;
+    
+    // Hide loader when page is fully loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            SystemLogs.hideLoader();
+        });
+    } else {
+        SystemLogs.hideLoader();
+    }
 })();

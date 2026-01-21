@@ -22,6 +22,7 @@ return [
     
     'apply_filters' => 'Apply Filters',
     'reset' => 'Reset',
+    'delete' => 'Delete',
     'delete_all_filtered' => 'Delete All Filtered',
     'delete_selected' => 'Delete Selected',
     'view_details' => 'View Details',

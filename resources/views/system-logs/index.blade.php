@@ -12,6 +12,14 @@
 @endpush
 
 @section('content')
+{{-- Loading Overlay --}}
+<div class="system-logs-loader" id="system-logs-loader">
+    <div class="system-logs-loader-content">
+        <div class="system-logs-spinner"></div>
+        <div class="system-logs-loader-text">Loading logs...</div>
+    </div>
+</div>
+
 <div class="system-logs-wrapper">
     <div class="container-fluid">
         <div class="row">
@@ -109,7 +117,11 @@
                                         <button type="button" class="btn btn-secondary" id="reset-filters">
                                             <i class="fas fa-redo"></i> {{ __('system-logs::system-logs.reset') }}
                                         </button>
-                                        @if(auth()->user()?->can(config('system-logs.permissions.delete')))
+                                        @php
+                                            $permission = config('system-logs.permissions.delete');
+                                            $canDelete = !$permission || (auth()->check() && auth()->user()?->can($permission));
+                                        @endphp
+                                        @if($canDelete)
                                             <button type="button" class="btn btn-danger" id="bulk-delete-filtered">
                                                 <i class="fas fa-trash-alt"></i> {{ __('system-logs::system-logs.delete_all_filtered') }}
                                             </button>
@@ -146,7 +158,11 @@
 </div>
 
 {{-- Bulk Delete Confirmation Modal --}}
-@if(auth()->user()?->can(config('system-logs.permissions.delete')))
+@php
+    $permission = config('system-logs.permissions.delete');
+    $canDelete = !$permission || (auth()->check() && auth()->user()?->can($permission));
+@endphp
+@if($canDelete)
     @include('system-logs::partials.bulk-delete-modal')
 @endif
 @endsection

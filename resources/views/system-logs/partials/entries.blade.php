@@ -7,9 +7,15 @@
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
+                    @php
+                        $permission = config('system-logs.permissions.delete');
+                        $canDelete = !$permission || (auth()->check() && auth()->user()?->can($permission));
+                    @endphp
+                    @if($canDelete)
                     <th width="50">
                         <input type="checkbox" id="select-all-entries">
                     </th>
+                    @endif
                     <th width="180">{{ __('system-logs::system-logs.timestamp') }}</th>
                     <th width="100">{{ __('system-logs::system-logs.level') }}</th>
                     <th width="100">{{ __('system-logs::system-logs.environment') }}</th>
@@ -66,11 +72,16 @@
                             @endif
                         </td>
                         <td>
-                            @if(auth()->user()?->can(config('system-logs.permissions.delete')))
+                            @php
+                                $permission = config('system-logs.permissions.delete');
+                                $canDelete = !$permission || (auth()->check() && auth()->user()?->can($permission));
+                            @endphp
+                            @if($canDelete)
                                 <button class="btn btn-sm btn-danger delete-entry-btn" 
                                         data-file="{{ $entry['file'] }}" 
-                                        data-timestamp="{{ $entry['timestamp']->toIso8601String() }}">
-                                    <i class="fas fa-trash"></i>
+                                        data-timestamp="{{ $entry['timestamp']->toIso8601String() }}"
+                                        title="{{ __('system-logs::system-logs.delete') }}">
+                                    <i class="fas fa-trash"></i> {{ __('system-logs::system-logs.delete') }}
                                 </button>
                             @endif
                         </td>

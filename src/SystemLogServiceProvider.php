@@ -59,7 +59,7 @@ class SystemLogServiceProvider extends ServiceProvider
         $this->loadRoutes();
         
         // Load views
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'system-logs');
+        $this->loadViewsFrom(__DIR__.'/../resources/views/system-logs', 'system-logs');
         
         // Load translations
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'system-logs');
