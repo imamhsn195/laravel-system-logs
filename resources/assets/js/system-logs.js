@@ -12,6 +12,9 @@
         },
         
         bindEvents: function() {
+            // Use event delegation for dynamically loaded elements
+            const wrapper = document.querySelector('.system-logs-wrapper') || document.body;
+            
             // Filter form submission
             const filterForm = document.getElementById('log-filters-form');
             if (filterForm) {
@@ -49,18 +52,24 @@
             // Reset filters
             const resetBtn = document.getElementById('reset-filters');
             if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
+                resetBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
                     window.location.href = this.config.baseUrl;
                 });
             }
             
-            // Delete single entry
-            document.querySelectorAll('.delete-entry-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const file = e.target.closest('button').dataset.file;
-                    const timestamp = e.target.closest('button').dataset.timestamp;
-                    this.deleteEntry(file, timestamp);
-                });
+            // Delete single entry - use event delegation
+            wrapper.addEventListener('click', (e) => {
+                const deleteBtn = e.target.closest('.delete-entry-btn');
+                if (deleteBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const file = deleteBtn.dataset.file;
+                    const timestamp = deleteBtn.dataset.timestamp;
+                    if (file && timestamp) {
+                        this.deleteEntry(file, timestamp);
+                    }
+                }
             });
             
             // Select all checkbox
@@ -74,18 +83,19 @@
                 });
             }
             
-            // Individual checkbox change
-            document.querySelectorAll('.entry-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', () => {
+            // Individual checkbox change - use event delegation
+            wrapper.addEventListener('change', (e) => {
+                if (e.target.classList.contains('entry-checkbox')) {
                     this.updateBulkDeleteButton();
                     this.updateSelectAllCheckbox();
-                });
+                }
             });
             
             // Bulk delete selected
             const bulkDeleteSelected = document.getElementById('bulk-delete-selected');
             if (bulkDeleteSelected) {
-                bulkDeleteSelected.addEventListener('click', () => {
+                bulkDeleteSelected.addEventListener('click', (e) => {
+                    e.preventDefault();
                     this.bulkDeleteSelected();
                 });
             }
@@ -93,7 +103,8 @@
             // Bulk delete by filters
             const bulkDeleteFiltered = document.getElementById('bulk-delete-filtered');
             if (bulkDeleteFiltered) {
-                bulkDeleteFiltered.addEventListener('click', () => {
+                bulkDeleteFiltered.addEventListener('click', (e) => {
+                    e.preventDefault();
                     this.showBulkDeleteModal();
                 });
             }
