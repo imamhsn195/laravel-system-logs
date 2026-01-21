@@ -21,9 +21,35 @@ A comprehensive Laravel package for viewing and managing system logs with an int
 ## Requirements
 
 - PHP 8.1 or higher
-- Laravel 10.x or 11.x
+- Laravel 10.x, 11.x, or 12.x
 
 ## Installation
+
+### Via Composer (from GitHub)
+
+Add the repository to your `composer.json`:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/imamhsn195/laravel-system-logs"
+        }
+    ],
+    "require": {
+        "imamhsn195/laravel-system-logs": "dev-master"
+    }
+}
+```
+
+Then run:
+
+```bash
+composer require imamhsn195/laravel-system-logs:dev-master
+```
+
+### Via Packagist (when published)
 
 ```bash
 composer require imamhsn195/laravel-system-logs
