@@ -123,6 +123,18 @@
                                         </select>
                                     </div>
                                     
+                                    <div class="col-md-2">
+                                        <label for="packagist-package-name" class="form-label">Packagist Package Name</label>
+                                        <div class="position-relative">
+                                            <input type="text" name="packagist_package_name" id="packagist-package-name" class="form-control" 
+                                                   value="{{ request('packagist_package_name') }}" placeholder="vendor/package">
+                                            <div id="packagist-validation-icon" class="packagist-validation-icon" style="display: none;"></div>
+                                        </div>
+                                        <div id="packagist-error" class="invalid-feedback" style="display: none;"></div>
+                                        <div id="packagist-success" class="valid-feedback" style="display: none;"></div>
+                                        <div id="packagist-info" class="packagist-package-info" style="display: none;"></div>
+                                    </div>
+                                    
                                     <div class="col-md-12 mt-3">
                                         <button type="submit" class="btn btn-primary">
                                             <i class="fas fa-filter"></i> {{ __('system-logs::system-logs.apply_filters') }}
@@ -158,6 +170,12 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         @endif
+                        
+                        {{-- Packagist Package Error --}}
+                        <div id="packagist-error-alert" class="alert alert-danger alert-dismissible fade show" role="alert" style="display: none;">
+                            <span id="packagist-error-message"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                         
                         {{-- Log Entries Table --}}
                         <div id="log-entries-container">
@@ -219,6 +237,7 @@
                         deleteUrl: '{{ route(config("system-logs.route.name_prefix") . "destroy") }}',
                         bulkDeleteUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete") }}',
                         bulkDeleteByFiltersUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete-by-filters") }}',
+                        validatePackagistUrl: '{{ route(config("system-logs.route.name_prefix") . "validate-packagist") }}',
                         csrfToken: '{{ csrf_token() }}',
                     });
                 } catch (error) {

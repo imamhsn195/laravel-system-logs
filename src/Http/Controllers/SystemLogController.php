@@ -28,6 +28,16 @@ class SystemLogController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
+        // Validate Packagist package name if provided
+        if ($request->has('packagist_package_name') && !empty($request->input('packagist_package_name'))) {
+            $packageName = $request->input('packagist_package_name');
+            if (!$this->validatePackagistPackage($packageName)) {
+                return redirect()
+                    ->route(config('system-logs.route.name_prefix') . 'index', $request->except('packagist_package_name'))
+                    ->with('error', "Package '{$packageName}' not found on Packagist.org");
+            }
+        }
+        
         $filters = $this->getFilters($request);
         $perPage = $this->getPerPage($request);
         
@@ -229,5 +239,62 @@ class SystemLogController extends Controller
         return redirect()
             ->route(config('system-logs.route.name_prefix') . 'index')
             ->with('error', $message);
+    }
+    
+    /**
+     * Validate Packagist package name.
+     */
+    protected function validatePackagistPackage(string $packageName): bool
+    {
+        // Validate package name format (vendor/package)
+        if (!preg_match('/^[a-z0-9]([_.-]?[a-z0-9]+)*\/[a-z0-9](([_.]|-{1,2})?[a-z0-9]+)*$/', $packageName)) {
+            return false;
+        }
+        
+        try {
+            $url = "https://packagist.org/packages/{$packageName}.json";
+            $context = stream_context_create([
+                'http' => [
+                    'method' => 'GET',
+                    'header' => [
+                        'User-Agent: Laravel System Logs Package',
+                        'Accept: application/json'
+                    ],
+                    'timeout' => 5,
+                ]
+            ]);
+            
+            $response = @file_get_contents($url, false, $context);
+            
+            if ($response === false) {
+                return false;
+            }
+            
+            $data = json_decode($response, true);
+            return isset($data['package']) && !empty($data['package']);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+    
+    /**
+     * Validate Packagist package name via AJAX.
+     */
+    public function validatePackagist(Request $request): JsonResponse
+    {
+        $request->validate([
+            'package_name' => 'required|string',
+        ]);
+        
+        $packageName = $request->input('package_name');
+        $isValid = $this->validatePackagistPackage($packageName);
+        
+        return response()->json([
+            'success' => $isValid,
+            'message' => $isValid 
+                ? "Package '{$packageName}' found on Packagist.org" 
+                : "Package '{$packageName}' not found on Packagist.org",
+            'package_name' => $packageName,
+        ]);
     }
 }
