@@ -51,6 +51,6 @@
         "issues": "https://github.com/imamhsn195/laravel-system-logs/issues",
         "source": "https://github.com/imamhsn195/laravel-system-logs"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

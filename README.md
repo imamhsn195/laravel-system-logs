@@ -25,7 +25,15 @@ A comprehensive Laravel package for viewing and managing system logs with an int
 
 ## Installation
 
+### Via Packagist (Recommended)
+
+```bash
+composer require imamhsn195/laravel-system-logs
+```
+
 ### Via Composer (from GitHub)
+
+If you need to install from the GitHub repository directly:
 
 Add the repository to your `composer.json`:
 
@@ -47,12 +55,6 @@ Then run:
 
 ```bash
 composer require imamhsn195/laravel-system-logs:dev-main
-```
-
-### Via Packagist (when published)
-
-```bash
-composer require imamhsn195/laravel-system-logs
 ```
 
 ## Configuration
