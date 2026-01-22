@@ -15,5 +15,3 @@ Route::delete('/bulk', [SystemLogController::class, 'bulkDelete'])
 Route::delete('/bulk-by-filters', [SystemLogController::class, 'bulkDeleteByFilters'])
     ->name('bulk-delete-by-filters');
 
-Route::post('/validate-packagist', [SystemLogController::class, 'validatePackagist'])
-    ->name('validate-packagist');

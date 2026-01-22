@@ -123,18 +123,6 @@
                                         </select>
                                     </div>
                                     
-                                    <div class="col-md-2">
-                                        <label for="packagist-package-name" class="form-label">Packagist Package Name</label>
-                                        <div class="position-relative">
-                                            <input type="text" name="packagist_package_name" id="packagist-package-name" class="form-control" 
-                                                   value="{{ request('packagist_package_name') }}" placeholder="vendor/package">
-                                            <div id="packagist-validation-icon" class="packagist-validation-icon" style="display: none;"></div>
-                                        </div>
-                                        <div id="packagist-error" class="invalid-feedback" style="display: none;"></div>
-                                        <div id="packagist-success" class="valid-feedback" style="display: none;"></div>
-                                        <div id="packagist-info" class="packagist-package-info" style="display: none;"></div>
-                                    </div>
-                                    
                                     <div class="col-md-12 mt-3">
                                         <button type="submit" class="btn btn-primary">
                                             <i class="fas fa-filter"></i> {{ __('system-logs::system-logs.apply_filters') }}
@@ -170,12 +158,6 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
                         @endif
-                        
-                        {{-- Packagist Package Error --}}
-                        <div id="packagist-error-alert" class="alert alert-danger alert-dismissible fade show" role="alert" style="display: none;">
-                            <span id="packagist-error-message"></span>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
                         
                         {{-- Log Entries Table --}}
                         <div id="log-entries-container">
@@ -215,29 +197,19 @@
     @endif
     
     <script>
-        // Wait for DOM to be ready
         (function() {
             function initSystemLogs() {
-                console.log('SystemLogs: DOM ready, checking SystemLogs object...');
-                console.log('SystemLogs: JS path = {{ $jsPath }}');
-                console.log('SystemLogs: File exists = {{ $jsExists ? "true" : "false" }}');
-                
                 if (typeof SystemLogs === 'undefined') {
-                    console.error('SystemLogs: JavaScript file not loaded!');
-                    console.error('Expected path: {{ $jsPath }}');
-                    console.error('File exists check: {{ $jsExists ? "File exists" : "File NOT found at: " . $jsFile }}');
-                    console.error('Please run: php artisan vendor:publish --tag=system-logs-assets --force');
+                    console.error('SystemLogs: JavaScript file not loaded! Please run: php artisan vendor:publish --tag=system-logs-assets --force');
                     return;
                 }
                 
-                console.log('SystemLogs: Object found, initializing...');
                 try {
                     SystemLogs.init({
                         baseUrl: '{{ route(config("system-logs.route.name_prefix") . "index") }}',
                         deleteUrl: '{{ route(config("system-logs.route.name_prefix") . "destroy") }}',
                         bulkDeleteUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete") }}',
                         bulkDeleteByFiltersUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete-by-filters") }}',
-                        validatePackagistUrl: '{{ route(config("system-logs.route.name_prefix") . "validate-packagist") }}',
                         csrfToken: '{{ csrf_token() }}',
                     });
                 } catch (error) {
@@ -248,7 +220,6 @@
             if (document.readyState === 'loading') {
                 document.addEventListener('DOMContentLoaded', initSystemLogs);
             } else {
-                // DOM already loaded
                 setTimeout(initSystemLogs, 100);
             }
         })();
