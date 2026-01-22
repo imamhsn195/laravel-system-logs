@@ -168,26 +168,57 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ app('system-logs.assets')->js() }}?v={{ time() }}"></script>
+    @php
+        $jsPath = app('system-logs.assets')->js();
+        $jsFile = public_path('vendor/system-logs/js/system-logs.js');
+        $jsExists = file_exists($jsFile);
+    @endphp
+    
+    @if($jsExists)
+        <script src="{{ $jsPath }}?v={{ time() }}"></script>
+    @else
+        <script>
+            console.error('SystemLogs: JavaScript file not found at: {{ $jsFile }}');
+            console.error('Please run: php artisan vendor:publish --tag=system-logs-assets');
+        </script>
+    @endif
+    
     <script>
         // Wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('SystemLogs: DOM ready, checking SystemLogs object...');
-            
-            if (typeof SystemLogs === 'undefined') {
-                console.error('SystemLogs: JavaScript file not loaded! Check if the asset path is correct.');
-                console.error('Expected path: {{ app("system-logs.assets")->js() }}');
-                return;
+        (function() {
+            function initSystemLogs() {
+                console.log('SystemLogs: DOM ready, checking SystemLogs object...');
+                console.log('SystemLogs: JS path = {{ $jsPath }}');
+                console.log('SystemLogs: File exists = {{ $jsExists ? "true" : "false" }}');
+                
+                if (typeof SystemLogs === 'undefined') {
+                    console.error('SystemLogs: JavaScript file not loaded!');
+                    console.error('Expected path: {{ $jsPath }}');
+                    console.error('File exists check: {{ $jsExists ? "File exists" : "File NOT found at: " . $jsFile }}');
+                    console.error('Please run: php artisan vendor:publish --tag=system-logs-assets --force');
+                    return;
+                }
+                
+                console.log('SystemLogs: Object found, initializing...');
+                try {
+                    SystemLogs.init({
+                        baseUrl: '{{ route(config("system-logs.route.name_prefix") . "index") }}',
+                        deleteUrl: '{{ route(config("system-logs.route.name_prefix") . "destroy") }}',
+                        bulkDeleteUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete") }}',
+                        bulkDeleteByFiltersUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete-by-filters") }}',
+                        csrfToken: '{{ csrf_token() }}',
+                    });
+                } catch (error) {
+                    console.error('SystemLogs: Initialization error:', error);
+                }
             }
             
-            console.log('SystemLogs: Object found, initializing...');
-            SystemLogs.init({
-                baseUrl: '{{ route(config("system-logs.route.name_prefix") . "index") }}',
-                deleteUrl: '{{ route(config("system-logs.route.name_prefix") . "destroy") }}',
-                bulkDeleteUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete") }}',
-                bulkDeleteByFiltersUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete-by-filters") }}',
-                csrfToken: '{{ csrf_token() }}',
-            });
-        });
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initSystemLogs);
+            } else {
+                // DOM already loaded
+                setTimeout(initSystemLogs, 100);
+            }
+        })();
     </script>
 @endpush
