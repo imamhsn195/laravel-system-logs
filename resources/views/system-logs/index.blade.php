@@ -168,14 +168,26 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ app('system-logs.assets')->js() }}"></script>
+    <script src="{{ app('system-logs.assets')->js() }}?v={{ time() }}"></script>
     <script>
-        SystemLogs.init({
-            baseUrl: '{{ route(config("system-logs.route.name_prefix") . "index") }}',
-            deleteUrl: '{{ route(config("system-logs.route.name_prefix") . "destroy") }}',
-            bulkDeleteUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete") }}',
-            bulkDeleteByFiltersUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete-by-filters") }}',
-            csrfToken: '{{ csrf_token() }}',
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('SystemLogs: DOM ready, checking SystemLogs object...');
+            
+            if (typeof SystemLogs === 'undefined') {
+                console.error('SystemLogs: JavaScript file not loaded! Check if the asset path is correct.');
+                console.error('Expected path: {{ app("system-logs.assets")->js() }}');
+                return;
+            }
+            
+            console.log('SystemLogs: Object found, initializing...');
+            SystemLogs.init({
+                baseUrl: '{{ route(config("system-logs.route.name_prefix") . "index") }}',
+                deleteUrl: '{{ route(config("system-logs.route.name_prefix") . "destroy") }}',
+                bulkDeleteUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete") }}',
+                bulkDeleteByFiltersUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete-by-filters") }}',
+                csrfToken: '{{ csrf_token() }}',
+            });
         });
     </script>
 @endpush

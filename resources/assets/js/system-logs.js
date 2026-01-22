@@ -7,13 +7,30 @@
     const SystemLogs = {
         config: {},
         init: function(config) {
+            console.log('SystemLogs: Initializing...', config);
             this.config = config;
+            
+            // Check if required elements exist
+            if (!this.config.baseUrl) {
+                console.error('SystemLogs: baseUrl is missing!');
+                return;
+            }
+            
             this.bindEvents();
+            console.log('SystemLogs: Initialized successfully');
         },
         
         bindEvents: function() {
+            console.log('SystemLogs: Binding events...');
             // Use event delegation for dynamically loaded elements
             const wrapper = document.querySelector('.system-logs-wrapper') || document.body;
+            
+            if (!wrapper) {
+                console.error('SystemLogs: .system-logs-wrapper not found!');
+                return;
+            }
+            
+            console.log('SystemLogs: Wrapper found', wrapper);
             
             // Filter form submission
             const filterForm = document.getElementById('log-filters-form');
@@ -62,12 +79,16 @@
             wrapper.addEventListener('click', (e) => {
                 const deleteBtn = e.target.closest('.delete-entry-btn');
                 if (deleteBtn) {
+                    console.log('SystemLogs: Delete button clicked', deleteBtn);
                     e.preventDefault();
                     e.stopPropagation();
                     const file = deleteBtn.dataset.file;
                     const timestamp = deleteBtn.dataset.timestamp;
+                    console.log('SystemLogs: Delete data', { file, timestamp });
                     if (file && timestamp) {
                         this.deleteEntry(file, timestamp);
+                    } else {
+                        console.error('SystemLogs: Missing file or timestamp data attributes');
                     }
                 }
             });
