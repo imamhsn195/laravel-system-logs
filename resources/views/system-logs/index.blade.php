@@ -8,7 +8,20 @@
 @section('title', $title)
 
 @push('styles')
-    <link rel="stylesheet" href="{{ app('system-logs.assets')->css() }}">
+    @php
+        $cssPath = app('system-logs.assets')->css();
+        $cssFile = public_path('vendor/system-logs/css/system-logs.css');
+        $cssExists = file_exists($cssFile);
+    @endphp
+    
+    @if($cssExists)
+        <link rel="stylesheet" href="{{ $cssPath }}?v={{ time() }}">
+    @else
+        <script>
+            console.error('SystemLogs: CSS file not found at: {{ $cssFile }}');
+            console.error('Please run: php artisan vendor:publish --tag=system-logs-assets --force');
+        </script>
+    @endif
 @endpush
 
 @section('content')

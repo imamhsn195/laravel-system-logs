@@ -1,7 +1,9 @@
 /* System Logs Package Styles */
+/* Ensure styles are scoped to avoid conflicts */
 
 .system-logs-wrapper {
-    padding: 20px 0;
+    padding: 20px 0 !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 
 .system-logs-wrapper .card {
