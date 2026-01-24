@@ -61,7 +61,7 @@
                                name="{{ $fieldName }}" 
                                value="{{ $fieldValue }}"{!! $buildAttributes($fieldAttributes) !!}>
                     @else
-                        <div class="mb-3">
+                        <div class="col-12 mb-3">
                             <label for="{{ $fieldId }}" class="form-label">{{ $fieldLabel }}</label>
                             
                             @if($fieldType === 'select')
