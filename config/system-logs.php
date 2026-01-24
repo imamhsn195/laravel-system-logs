@@ -23,6 +23,16 @@ return [
         'layout_type' => 'extend',
         'section_name' => 'content',
         'title' => 'System Logs',
+        'filter_panel' => [
+            'enabled' => true,
+            'width' => 400,
+            'position' => 'right',
+            'overlay_opacity' => 0.5,
+        ],
+        'filter_chips' => [
+            'enabled' => true,
+            'auto_remove' => true,
+        ],
     ],
     
     // Filter defaults
@@ -35,6 +45,7 @@ return [
         'max_max_files' => 20,
         'max_lines_per_file' => 2000, // Limit lines read per file for performance
         'read_from_end' => true, // Read from end of file (most recent entries first)
+        'levels' => ['debug', 'info', 'notice', 'warning', 'error', 'critical', 'alert', 'emergency'],
     ],
     
     // Parsing configuration

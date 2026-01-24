@@ -52,5 +52,6 @@
         "source": "https://github.com/imamhsn195/laravel-system-logs"
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "version": "1.1.0"
 }

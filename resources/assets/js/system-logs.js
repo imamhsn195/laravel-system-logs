@@ -25,8 +25,11 @@
                 return;
             }
             
+            // Initialize filter panel
+            this.initFilterPanel();
+            
             // Filter form submission
-            const filterForm = document.getElementById('log-filters-form');
+            const filterForm = document.getElementById('log-filter-form') || document.getElementById('log-filters-form');
             if (filterForm) {
                 filterForm.addEventListener('submit', async (e) => {
                     e.preventDefault();
@@ -59,14 +62,88 @@
                 });
             }
             
-            // Reset filters
-            const resetBtn = document.getElementById('reset-filters');
-            if (resetBtn) {
-                resetBtn.addEventListener('click', (e) => {
+            // Reset filters button - use event delegation
+            wrapper.addEventListener('click', (e) => {
+                const resetBtn = e.target.closest('#reset-filters');
+                if (resetBtn) {
                     e.preventDefault();
-                    window.location.href = this.config.baseUrl;
-                });
-            }
+                    // Clear all filter inputs
+                    const form = document.getElementById('log-filter-form') || document.getElementById('log-filters-form');
+                    if (form) {
+                        form.querySelectorAll('select, input[type="text"], input[type="date"], input[type="search"], input[type="checkbox"]').forEach(input => {
+                            if (input.type === 'checkbox') {
+                                input.checked = false;
+                            } else if (input.tagName === 'SELECT') {
+                                input.selectedIndex = 0;
+                            } else {
+                                input.value = '';
+                            }
+                        });
+                        // Navigate directly to base URL without any query parameters
+                        this.showLoader();
+                        const baseUrl = this.config.baseUrl || window.location.pathname;
+                        fetch(baseUrl, {
+                            method: 'GET',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'text/html',
+                            }
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            // Parse the HTML response
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            
+                            // Update entries container
+                            const entriesContainer = document.getElementById('log-entries-container');
+                            const newEntries = doc.querySelector('.system-logs-entries');
+                            if (entriesContainer && newEntries) {
+                                entriesContainer.innerHTML = newEntries.outerHTML;
+                            }
+                            
+                            // Update buttons row - extract from response and replace current
+                            const currentButtonsRow = document.querySelector('.d-flex.align-items-center.gap-2.mb-3');
+                            const newButtonsRow = doc.querySelector('.d-flex.align-items-center.gap-2.mb-3');
+                            if (currentButtonsRow && newButtonsRow) {
+                                currentButtonsRow.innerHTML = newButtonsRow.innerHTML;
+                            }
+                            
+                            // Update filter chips - remove if exists
+                            const filterChipsContainer = document.querySelector('.filter-chips-container');
+                            if (filterChipsContainer) {
+                                filterChipsContainer.remove();
+                            }
+                            
+                            // Update filter toggle button badge - remove if exists
+                            const filterToggleBtn = document.querySelector('.filter-toggle-btn');
+                            if (filterToggleBtn) {
+                                const badge = filterToggleBtn.querySelector('.badge');
+                                if (badge) {
+                                    badge.remove();
+                                }
+                            }
+                            
+                            // Update URL without reload
+                            window.history.pushState({}, '', baseUrl);
+                            
+                            // Re-initialize only the necessary event listeners for new content
+                            this.updateSelectAllCheckbox();
+                            this.updateBulkDeleteButton();
+                            
+                            this.hideLoader();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            this.hideLoader();
+                            // Fallback to page reload
+                            window.location.href = baseUrl;
+                        });
+                    } else {
+                        window.location.href = this.config.baseUrl;
+                    }
+                }
+            });
             
             // Delete single entry - use event delegation
             wrapper.addEventListener('click', (e) => {
@@ -82,19 +159,16 @@
                 }
             });
             
-            // Select all checkbox
-            const selectAll = document.getElementById('select-all-entries');
-            if (selectAll) {
-                selectAll.addEventListener('change', (e) => {
+            // Select all checkbox - use event delegation
+            wrapper.addEventListener('change', (e) => {
+                if (e.target.id === 'select-all-entries') {
                     document.querySelectorAll('.entry-checkbox').forEach(checkbox => {
                         checkbox.checked = e.target.checked;
                     });
                     this.updateBulkDeleteButton();
-                });
-            }
-            
-            // Individual checkbox change - use event delegation
-            wrapper.addEventListener('change', (e) => {
+                }
+                
+                // Individual checkbox change
                 if (e.target.classList.contains('entry-checkbox')) {
                     this.updateBulkDeleteButton();
                     this.updateSelectAllCheckbox();
@@ -109,43 +183,17 @@
                     this.bulkDeleteSelected();
                 });
             }
-            
-            // Bulk delete by filters
-            const bulkDeleteFiltered = document.getElementById('bulk-delete-filtered');
-            if (bulkDeleteFiltered) {
-                bulkDeleteFiltered.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.showBulkDeleteModal();
-                });
-            }
-            
-            // Confirm bulk delete
-            const confirmBulkDelete = document.getElementById('confirm-bulk-delete');
-            if (confirmBulkDelete) {
-                confirmBulkDelete.addEventListener('click', () => {
-                    this.confirmBulkDelete();
-                });
-            }
-            
-            // Modal validation
-            const confirmCheckbox = document.getElementById('confirm-checkbox');
-            const confirmText = document.getElementById('confirm-text');
-            if (confirmCheckbox && confirmText) {
-                [confirmCheckbox, confirmText].forEach(el => {
-                    el.addEventListener('change', () => {
-                        this.validateBulkDeleteConfirmation();
-                    });
-                    el.addEventListener('input', () => {
-                        this.validateBulkDeleteConfirmation();
-                    });
-                });
-            }
         },
         
         applyFilters: function() {
             this.showLoader();
             
-            const form = document.getElementById('log-filters-form');
+            const form = document.getElementById('log-filter-form') || document.getElementById('log-filters-form');
+            if (!form) {
+                console.error('SystemLogs: Filter form not found!');
+                return;
+            }
+            
             const formData = new FormData(form);
             const params = new URLSearchParams();
             
@@ -155,7 +203,92 @@
                 }
             }
             
-            window.location.href = this.config.baseUrl + '?' + params.toString();
+            // AJAX request to get filtered results
+            const endpoint = form.getAttribute('data-endpoint') || this.config.baseUrl;
+            const url = endpoint + '?' + params.toString();
+            
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'text/html',
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Parse the HTML response
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Update entries container
+                const entriesContainer = document.getElementById('log-entries-container');
+                const newEntries = doc.querySelector('.system-logs-entries');
+                if (entriesContainer && newEntries) {
+                    entriesContainer.innerHTML = newEntries.outerHTML;
+                }
+                
+                // Update buttons row - extract from response and replace current
+                const currentButtonsRow = document.querySelector('.d-flex.align-items-center.gap-2.mb-3');
+                const newButtonsRow = doc.querySelector('.d-flex.align-items-center.gap-2.mb-3');
+                if (currentButtonsRow && newButtonsRow) {
+                    currentButtonsRow.innerHTML = newButtonsRow.innerHTML;
+                }
+                
+                // Update filter chips - find the container in current page and in response
+                const filterChipsContainer = document.querySelector('.filter-chips-container');
+                const newChips = doc.querySelector('.filter-chips-container');
+                
+                if (filterChipsContainer) {
+                    if (newChips) {
+                        // Update existing chips container
+                        filterChipsContainer.innerHTML = newChips.innerHTML;
+                    } else {
+                        // No active filters, remove chips container
+                        filterChipsContainer.remove();
+                    }
+                } else if (newChips) {
+                    // Chips container doesn't exist but we have new chips, add them after buttons row
+                    const buttonsRow = document.querySelector('.d-flex.align-items-center.gap-2.mb-3');
+                    if (buttonsRow) {
+                        buttonsRow.insertAdjacentHTML('afterend', newChips.outerHTML);
+                    }
+                }
+                
+                // Update filter toggle button badge count
+                const activeFilterCount = newChips ? newChips.querySelectorAll('.filter-chip').length : 0;
+                const filterToggleBtn = document.querySelector('.filter-toggle-btn');
+                if (filterToggleBtn) {
+                    const badge = filterToggleBtn.querySelector('.badge');
+                    if (activeFilterCount > 0) {
+                        if (badge) {
+                            badge.textContent = activeFilterCount;
+                        } else {
+                            filterToggleBtn.insertAdjacentHTML('beforeend', 
+                                '<span class="badge bg-danger">' + activeFilterCount + '</span>'
+                            );
+                        }
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                }
+                
+                // Update URL without reload
+                window.history.pushState({}, '', url);
+                
+                // Re-initialize only the necessary event listeners for new content
+                // Most handlers use event delegation, so they work automatically
+                // Only need to update select-all checkbox state
+                this.updateSelectAllCheckbox();
+                this.updateBulkDeleteButton();
+                
+                this.hideLoader();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                this.hideLoader();
+                // Fallback to page reload
+                window.location.href = url;
+            });
         },
         
         showLoader: function() {
@@ -255,96 +388,6 @@
             });
         },
         
-        showBulkDeleteModal: function() {
-            // Get active filters
-            const form = document.getElementById('log-filters-form');
-            const formData = new FormData(form);
-            const activeFilters = [];
-            
-            for (const [key, value] of formData.entries()) {
-                if (value && !['per_page', 'max_files'].includes(key)) {
-                    activeFilters.push({ key, value });
-                }
-            }
-            
-            if (activeFilters.length === 0) {
-                alert('Please apply at least one filter before bulk deleting');
-                return;
-            }
-            
-            // Update modal content
-            const filtersList = document.getElementById('filters-list');
-            filtersList.innerHTML = activeFilters.map(filter => 
-                `<li><strong>${filter.key}:</strong> ${filter.value}</li>`
-            ).join('');
-            
-            // Get estimated count (you might want to make an AJAX call here)
-            document.getElementById('estimated-count').textContent = 'Calculating...';
-            
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('bulkDeleteModal'));
-            modal.show();
-        },
-        
-        validateBulkDeleteConfirmation: function() {
-            const checkbox = document.getElementById('confirm-checkbox');
-            const textInput = document.getElementById('confirm-text');
-            const confirmBtn = document.getElementById('confirm-bulk-delete');
-            
-            if (checkbox && textInput && confirmBtn) {
-                const isValid = checkbox.checked && 
-                               textInput.value.toUpperCase() === 'DELETE';
-                confirmBtn.disabled = !isValid;
-            }
-        },
-        
-        confirmBulkDelete: function() {
-            const form = document.getElementById('log-filters-form');
-            const formData = new FormData(form);
-            const params = {};
-            
-            for (const [key, value] of formData.entries()) {
-                if (value && !['per_page', 'max_files'].includes(key)) {
-                    params[key] = value;
-                }
-            }
-            
-            params.confirm = true;
-            
-            const requestData = new FormData();
-            Object.keys(params).forEach(key => {
-                requestData.append(key, params[key]);
-            });
-            requestData.append('_token', this.config.csrfToken);
-            requestData.append('_method', 'DELETE');
-            
-            this.showLoader();
-            
-            fetch(this.config.bulkDeleteByFiltersUrl, {
-                method: 'POST',
-                body: requestData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('bulkDeleteModal'));
-                    modal.hide();
-                    location.reload();
-                } else {
-                    this.hideLoader();
-                    alert(data.message || 'Failed to delete log entries');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                this.hideLoader();
-                alert('An error occurred while deleting log entries');
-            });
-        },
-        
         updateBulkDeleteButton: function() {
             const selected = document.querySelectorAll('.entry-checkbox:checked').length;
             const btn = document.getElementById('bulk-delete-selected');
@@ -367,6 +410,144 @@
                 selectAll.checked = checked === checkboxes.length;
                 selectAll.indeterminate = checked > 0 && checked < checkboxes.length;
             }
+        },
+        
+        initFilterPanel: function() {
+            // Filter panel toggle
+            document.addEventListener('click', (e) => {
+                const toggleBtn = e.target.closest('[data-toggle-panel]');
+                if (toggleBtn) {
+                    e.preventDefault();
+                    const panelId = toggleBtn.getAttribute('data-toggle-panel');
+                    this.openFilterPanel(panelId);
+                }
+                
+                const closeBtn = e.target.closest('[data-close-panel]');
+                if (closeBtn) {
+                    e.preventDefault();
+                    const panelId = closeBtn.getAttribute('data-close-panel');
+                    this.closeFilterPanel(panelId);
+                }
+                
+                const overlay = e.target.closest('.filter-panel-overlay');
+                if (overlay && e.target === overlay) {
+                    const panelId = overlay.id.replace('-overlay', '');
+                    this.closeFilterPanel(panelId);
+                }
+                
+                // Refresh button
+                const refreshBtn = e.target.closest('#refresh-logs');
+                if (refreshBtn) {
+                    e.preventDefault();
+                    this.refreshLogs();
+                }
+            });
+            
+            // Apply filters button
+            document.addEventListener('click', (e) => {
+                const applyBtn = e.target.closest('[data-apply-filters]');
+                if (applyBtn) {
+                    e.preventDefault();
+                    const formId = applyBtn.getAttribute('data-apply-filters');
+                    const form = document.getElementById(formId);
+                    if (form) {
+                        this.applyFilters();
+                    }
+                }
+            });
+            
+            // Clear filters button
+            document.addEventListener('click', (e) => {
+                const clearBtn = e.target.closest('[data-clear-filters]');
+                if (clearBtn) {
+                    e.preventDefault();
+                    const formId = clearBtn.getAttribute('data-clear-filters');
+                    const filterUrl = clearBtn.getAttribute('data-filter-url');
+                    if (filterUrl) {
+                        window.location.href = filterUrl;
+                    }
+                }
+            });
+            
+            // Remove filter chip
+            document.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('[data-remove-filter]');
+                if (removeBtn) {
+                    e.preventDefault();
+                    const filterName = removeBtn.getAttribute('data-remove-filter');
+                    const filterUrl = removeBtn.getAttribute('data-filter-url');
+                    this.removeFilterChip(filterName, filterUrl);
+                }
+            });
+            
+            // ESC key to close panel
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const activePanel = document.querySelector('.filter-panel.active');
+                    if (activePanel) {
+                        const panelId = activePanel.id;
+                        this.closeFilterPanel(panelId);
+                    }
+                }
+            });
+        },
+        
+        openFilterPanel: function(panelId) {
+            const overlay = document.getElementById(panelId + '-overlay');
+            const panel = document.getElementById(panelId);
+            
+            if (overlay && panel) {
+                overlay.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                setTimeout(() => {
+                    panel.classList.add('active');
+                }, 10);
+            }
+        },
+        
+        closeFilterPanel: function(panelId) {
+            const overlay = document.getElementById(panelId + '-overlay');
+            const panel = document.getElementById(panelId);
+            
+            if (overlay && panel) {
+                panel.classList.remove('active');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }, 300);
+            }
+        },
+        
+        removeFilterChip: function(filterName, filterUrl) {
+            // Get the form to update the specific filter field
+            const form = document.getElementById('log-filter-form') || document.getElementById('log-filters-form');
+            if (form) {
+                // Clear the specific filter input
+                const input = form.querySelector(`[name="${filterName}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = false;
+                    } else if (input.tagName === 'SELECT') {
+                        input.selectedIndex = 0;
+                    } else {
+                        input.value = '';
+                    }
+                }
+                
+                // Apply filters with AJAX (which will update the page without reload)
+                this.applyFilters();
+            } else {
+                // Fallback to page reload if form not found
+                const url = new URL(filterUrl || window.location.href);
+                url.searchParams.delete(filterName);
+                window.location.href = url.toString();
+            }
+        },
+        
+        refreshLogs: function() {
+            // Reload the page with current filters preserved
+            this.showLoader();
+            window.location.reload();
         }
     };
     

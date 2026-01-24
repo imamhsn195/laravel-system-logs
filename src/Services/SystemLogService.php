@@ -558,4 +558,33 @@ class SystemLogService
         
         return round($bytes, $precision) . ' ' . $units[$i];
     }
+    
+    /**
+     * Get available channels from log files.
+     */
+    public function availableChannels(): Collection
+    {
+        return $this->listFiles()
+            ->pluck('channel')
+            ->unique()
+            ->sort()
+            ->values();
+    }
+    
+    /**
+     * Get available log levels.
+     */
+    public function availableLevels(): array
+    {
+        return config('system-logs.filters.levels', [
+            'debug',
+            'info',
+            'notice',
+            'warning',
+            'error',
+            'critical',
+            'alert',
+            'emergency',
+        ]);
+    }
 }

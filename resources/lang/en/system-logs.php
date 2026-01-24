@@ -22,6 +22,10 @@ return [
     
     'apply_filters' => 'Apply Filters',
     'reset' => 'Reset',
+    'reset_filter' => 'Reset Filter',
+    'refresh' => 'Refresh',
+    'advanced_filters' => 'Advanced Filters',
+    'filters_auto_apply' => 'Filters apply automatically when changed',
     'delete' => 'Delete',
     'delete_all_filtered' => 'Delete All Filtered',
     'delete_selected' => 'Delete Selected',

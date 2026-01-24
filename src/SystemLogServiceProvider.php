@@ -45,6 +45,11 @@ class SystemLogServiceProvider extends ServiceProvider
             __DIR__.'/../resources/views' => resource_path('views/vendor/system-logs'),
         ], 'system-logs-views');
         
+        // Publish components
+        $this->publishes([
+            __DIR__.'/../resources/views/components' => resource_path('views/vendor/system-logs/components'),
+        ], 'system-logs-components');
+        
         // Publish translations
         $this->publishes([
             __DIR__.'/../resources/lang' => resource_path('lang/vendor/system-logs'),
@@ -60,6 +65,9 @@ class SystemLogServiceProvider extends ServiceProvider
         
         // Load views
         $this->loadViewsFrom(__DIR__.'/../resources/views/system-logs', 'system-logs');
+        
+        // Load components
+        $this->loadViewsFrom(__DIR__.'/../resources/views/components', 'system-logs');
         
         // Load translations
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'system-logs');

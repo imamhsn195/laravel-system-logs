@@ -42,107 +42,110 @@
                         <h3 class="card-title">{{ $title }}</h3>
                     </div>
                     <div class="card-body">
-                        {{-- Filter Panel --}}
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <form id="log-filters-form" class="row g-3">
-                                    <div class="col-md-2">
-                                        <label for="filter-channel" class="form-label">{{ __('system-logs::system-logs.channel') }}</label>
-                                        <select name="channel" id="filter-channel" class="form-select">
-                                            <option value="">{{ __('system-logs::system-logs.all_channels') }}</option>
-                                            @foreach($files->pluck('channel')->unique() as $channel)
-                                                <option value="{{ $channel }}" {{ request('channel') == $channel ? 'selected' : '' }}>
-                                                    {{ ucfirst($channel) }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <label for="filter-file" class="form-label">{{ __('system-logs::system-logs.file') }}</label>
-                                        <select name="file" id="filter-file" class="form-select">
-                                            <option value="">{{ __('system-logs::system-logs.all_files') }}</option>
-                                            @foreach($files as $file)
-                                                <option value="{{ $file['relative_path'] }}" {{ request('file') == $file['relative_path'] ? 'selected' : '' }}>
-                                                    {{ $file['relative_path'] }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <label for="filter-level" class="form-label">{{ __('system-logs::system-logs.level') }}</label>
-                                        <select name="level" id="filter-level" class="form-select">
-                                            <option value="">{{ __('system-logs::system-logs.all_levels') }}</option>
-                                            <option value="debug" {{ request('level') == 'debug' ? 'selected' : '' }}>Debug</option>
-                                            <option value="info" {{ request('level') == 'info' ? 'selected' : '' }}>Info</option>
-                                            <option value="notice" {{ request('level') == 'notice' ? 'selected' : '' }}>Notice</option>
-                                            <option value="warning" {{ request('level') == 'warning' ? 'selected' : '' }}>Warning</option>
-                                            <option value="error" {{ request('level') == 'error' ? 'selected' : '' }}>Error</option>
-                                            <option value="critical" {{ request('level') == 'critical' ? 'selected' : '' }}>Critical</option>
-                                            <option value="alert" {{ request('level') == 'alert' ? 'selected' : '' }}>Alert</option>
-                                            <option value="emergency" {{ request('level') == 'emergency' ? 'selected' : '' }}>Emergency</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <label for="filter-environment" class="form-label">{{ __('system-logs::system-logs.environment') }}</label>
-                                        <input type="text" name="environment" id="filter-environment" class="form-control" 
-                                               value="{{ request('environment') }}" placeholder="{{ __('system-logs::system-logs.environment') }}">
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <label for="filter-date" class="form-label">{{ __('system-logs::system-logs.date') }}</label>
-                                        <input type="date" name="date" id="filter-date" class="form-control" 
-                                               value="{{ request('date') }}">
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <label for="filter-search" class="form-label">{{ __('system-logs::system-logs.search') }}</label>
-                                        <input type="text" name="search" id="filter-search" class="form-control" 
-                                               value="{{ request('search') }}" placeholder="{{ __('system-logs::system-logs.search_placeholder') }}">
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <label for="filter-per-page" class="form-label">{{ __('system-logs::system-logs.per_page') }}</label>
-                                        <select name="per_page" id="filter-per-page" class="form-select">
-                                            <option value="10" {{ request('per_page', 50) == 10 ? 'selected' : '' }}>10</option>
-                                            <option value="25" {{ request('per_page', 50) == 25 ? 'selected' : '' }}>25</option>
-                                            <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50</option>
-                                            <option value="100" {{ request('per_page', 50) == 100 ? 'selected' : '' }}>100</option>
-                                            <option value="300" {{ request('per_page', 50) == 300 ? 'selected' : '' }}>300</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="col-md-2">
-                                        <label for="filter-max-files" class="form-label">{{ __('system-logs::system-logs.max_files') }}</label>
-                                        <select name="max_files" id="filter-max-files" class="form-select">
-                                            @for($i = 1; $i <= 20; $i++)
-                                                <option value="{{ $i }}" {{ request('max_files', 3) == $i ? 'selected' : '' }}>{{ $i }}</option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="col-md-12 mt-3">
-                                        <button type="submit" class="btn btn-primary">
-                                            <i class="fas fa-filter"></i> {{ __('system-logs::system-logs.apply_filters') }}
-                                        </button>
-                                        <button type="button" class="btn btn-secondary" id="reset-filters">
-                                            <i class="fas fa-redo"></i> {{ __('system-logs::system-logs.reset') }}
-                                        </button>
-                                        @php
-                                            $permission = config('system-logs.permissions.delete');
-                                            $canDelete = !$permission || (auth()->check() && auth()->user()?->can($permission));
-                                        @endphp
-                                        @if($canDelete)
-                                            <button type="button" class="btn btn-danger" id="bulk-delete-filtered">
-                                                <i class="fas fa-trash-alt"></i> {{ __('system-logs::system-logs.delete_all_filtered') }}
-                                            </button>
-                                        @endif
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
+                        {{-- Table Header with Filter Panel --}}
+                        @php
+                            $filterConfig = [
+                                [
+                                    'name' => 'channel',
+                                    'type' => 'select',
+                                    'label' => __('system-logs::system-logs.channel'),
+                                    'id' => 'log-channel',
+                                    'defaultOption' => ['value' => '', 'label' => __('system-logs::system-logs.all_channels')],
+                                    'options' => collect($channels ?? [])->mapWithKeys(function($channel) {
+                                        return [$channel => \Illuminate\Support\Str::title(str_replace('_', ' ', $channel))];
+                                    })->toArray(),
+                                    'value' => request('channel')
+                                ],
+                                [
+                                    'name' => 'file',
+                                    'type' => 'select',
+                                    'label' => __('system-logs::system-logs.file'),
+                                    'id' => 'log-file',
+                                    'defaultOption' => ['value' => '', 'label' => __('system-logs::system-logs.all_files')],
+                                    'options' => collect($files ?? [])->mapWithKeys(function($file) {
+                                        return [$file['relative_path'] => $file['relative_path'] . ' (' . $file['size_human'] . ')'];
+                                    })->toArray(),
+                                    'value' => request('file')
+                                ],
+                                [
+                                    'name' => 'level',
+                                    'type' => 'select',
+                                    'label' => __('system-logs::system-logs.level'),
+                                    'id' => 'log-level',
+                                    'defaultOption' => ['value' => '', 'label' => __('system-logs::system-logs.all_levels')],
+                                    'options' => collect($levels ?? [])->mapWithKeys(function($level) {
+                                        return [$level => strtoupper($level)];
+                                    })->toArray(),
+                                    'value' => request('level')
+                                ],
+                                [
+                                    'name' => 'environment',
+                                    'type' => 'text',
+                                    'label' => __('system-logs::system-logs.environment'),
+                                    'id' => 'log-environment',
+                                    'placeholder' => 'e.g. local, production',
+                                    'value' => request('environment')
+                                ],
+                                [
+                                    'name' => 'date',
+                                    'type' => 'date',
+                                    'label' => __('system-logs::system-logs.date'),
+                                    'id' => 'log-date',
+                                    'value' => request('date')
+                                ],
+                                [
+                                    'name' => 'search',
+                                    'type' => 'text',
+                                    'label' => __('system-logs::system-logs.search'),
+                                    'id' => 'log-search',
+                                    'placeholder' => __('system-logs::system-logs.search_placeholder'),
+                                    'value' => request('search')
+                                ],
+                                [
+                                    'name' => 'per_page',
+                                    'type' => 'select',
+                                    'label' => __('system-logs::system-logs.per_page'),
+                                    'id' => 'log-limit',
+                                    'defaultOption' => ['value' => '', 'label' => __('system-logs::system-logs.per_page')],
+                                    'options' => [
+                                        10 => '10',
+                                        25 => '25',
+                                        50 => '50',
+                                        100 => '100',
+                                        300 => '300',
+                                    ],
+                                    'value' => request('per_page', config('system-logs.filters.default_per_page', 50))
+                                ],
+                                [
+                                    'name' => 'max_files',
+                                    'type' => 'hidden',
+                                    'value' => request('max_files', config('system-logs.filters.default_max_files', 3))
+                                ]
+                            ];
+                            
+                            $permission = config('system-logs.permissions.delete');
+                            $canDelete = !$permission || (auth()->check() && auth()->user()?->can($permission));
+                        @endphp
+                        
+                        <x-system-logs::table-header
+                            :buttons="[
+                                'custom' => [
+                                    [
+                                        'type' => 'button',
+                                        'id' => 'refresh-logs',
+                                        'class' => 'btn btn-sm btn-outline-primary',
+                                        'label' => __('system-logs::system-logs.refresh'),
+                                        'icon' => 'fa-sync-alt'
+                                    ]
+                                ]
+                            ]"
+                            :filters="$filterConfig"
+                            :filterUrl="route(config('system-logs.route.name_prefix') . 'index')"
+                            :panelId="'system-logs-filter-panel'"
+                            :formId="'log-filter-form'"
+                            :formAttributes="['data-endpoint' => route(config('system-logs.route.name_prefix') . 'index'), 'class' => 'row']"
+                            :canDelete="$canDelete"
+                        />
                         
                         {{-- Success/Error Messages --}}
                         @if(session('success'))
@@ -161,7 +164,7 @@
                         
                         {{-- Log Entries Table --}}
                         <div id="log-entries-container">
-                            @include('system-logs::partials.entries', ['entries' => $entries])
+                            @include('system-logs::partials.entries', ['entries' => $entries, 'canDelete' => $canDelete])
                         </div>
                     </div>
                 </div>
@@ -170,14 +173,6 @@
     </div>
 </div>
 
-{{-- Bulk Delete Confirmation Modal --}}
-@php
-    $permission = config('system-logs.permissions.delete');
-    $canDelete = !$permission || (auth()->check() && auth()->user()?->can($permission));
-@endphp
-@if($canDelete)
-    @include('system-logs::partials.bulk-delete-modal')
-@endif
 @endsection
 
 @push('scripts')
@@ -209,7 +204,6 @@
                         baseUrl: '{{ route(config("system-logs.route.name_prefix") . "index") }}',
                         deleteUrl: '{{ route(config("system-logs.route.name_prefix") . "destroy") }}',
                         bulkDeleteUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete") }}',
-                        bulkDeleteByFiltersUrl: '{{ route(config("system-logs.route.name_prefix") . "bulk-delete-by-filters") }}',
                         csrfToken: '{{ csrf_token() }}',
                     });
                 } catch (error) {

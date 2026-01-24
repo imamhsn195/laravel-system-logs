@@ -36,8 +36,26 @@ class SystemLogController extends Controller
             $perPage
         );
         
-        // If AJAX request, return JSON
+        // If AJAX request, return HTML partial or JSON
         if ($request->ajax() || $request->wantsJson()) {
+            // Check if requesting HTML (for AJAX filtering)
+            if ($request->header('Accept') === 'text/html' || !$request->wantsJson()) {
+                // Check delete permission
+                $permission = config('system-logs.permissions.delete');
+                $canDelete = !$permission || ($request->user() && $request->user()?->can($permission));
+                
+                // Return full page HTML for AJAX filtering (so we can extract buttons row and filter chips)
+                return view('system-logs::index', [
+                    'entries' => $result['entries'],
+                    'files' => $result['files'],
+                    'filters' => $filters,
+                    'meta' => $result['meta'],
+                    'channels' => $this->logService->availableChannels(),
+                    'levels' => $this->logService->availableLevels(),
+                ])->render();
+            }
+            
+            // Return JSON
             return response()->json([
                 'success' => true,
                 'data' => $result['entries'],
@@ -52,6 +70,8 @@ class SystemLogController extends Controller
             'files' => $result['files'],
             'filters' => $filters,
             'meta' => $result['meta'],
+            'channels' => $this->logService->availableChannels(),
+            'levels' => $this->logService->availableLevels(),
         ]);
     }
     

@@ -1,3 +1,4 @@
+<div class="system-logs-entries">
 @if($entries->isEmpty())
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i> {{ __('system-logs::system-logs.no_entries_found') }}
@@ -28,10 +29,12 @@
             <tbody>
                 @foreach($entries as $entry)
                     <tr data-entry-id="{{ $entry['timestamp']->timestamp }}" data-file="{{ $entry['file'] }}">
+                        @if($canDelete)
                         <td>
                             <input type="checkbox" class="entry-checkbox" 
                                    value="{{ json_encode(['file' => $entry['file'], 'timestamp' => $entry['timestamp']->toIso8601String()]) }}">
                         </td>
+                        @endif
                         <td>
                             <small>{{ $entry['timestamp']->format('Y-m-d H:i:s') }}</small>
                         </td>
@@ -92,11 +95,14 @@
     </div>
     
     <div class="mt-3">
+        @if($canDelete)
         <button class="btn btn-danger" id="bulk-delete-selected" disabled>
             <i class="fas fa-trash-alt"></i> {{ __('system-logs::system-logs.delete_selected') }}
         </button>
+        @endif
         <span class="ms-2 text-muted">
             {{ __('system-logs::system-logs.showing') }} {{ $entries->count() }} {{ __('system-logs::system-logs.entries') }}
         </span>
     </div>
 @endif
+</div>
